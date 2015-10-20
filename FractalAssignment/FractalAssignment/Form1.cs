@@ -137,7 +137,6 @@ namespace FractalAssignment
             }
 
         }
-
         #endregion
 
         private const int MAX = 256;      // max iterations
@@ -205,22 +204,20 @@ namespace FractalAssignment
 
         public void update(Graphics g)
         {
-
             g.DrawImage(picture, 0, 0);
-            /*if (rectangle)
+            if (rectangle)
             {
-                g.setColor(Color.white);
                 if (xs < xe)
                 {
-                    if (ys < ye) g.drawRect(xs, ys, (xe - xs), (ye - ys));
-                    else g.drawRect(xs, ye, (xe - xs), (ys - ye));
+                    if (ys < ye) g.DrawRectangle(Pens.White,xs, ys, (xe - xs), (ye - ys));
+                    else g.DrawRectangle(Pens.White, xs, ye, (xe - xs), (ys - ye));
                 }
                 else
                 {
-                    if (ys < ye) g.drawRect(xe, ys, (xs - xe), (ye - ys));
-                    else g.drawRect(xe, ye, (xs - xe), (ys - ye));
+                    if (ys < ye) g.DrawRectangle(Pens.White, xe, ys, (xs - xe), (ye - ys));
+                    else g.DrawRectangle(Pens.White, xe, ye, (xs - xe), (ys - ye));
                 }
-            }*/
+            }
         }
 
         private void mandelbrot() // calculate all points
@@ -280,26 +277,29 @@ namespace FractalAssignment
                 xstart = xende - (yende - ystart) * (double)xy;
         }
 
-        /*
-        public void mousePressed(MouseEvent e)
+        
+        public void Form1_MouseDown(object sender, MouseEventArgs e)
         {
-            e.consume();
+            
+            //e.consume();
             if (action)
             {
-                xs = e.getX();
-                ys = e.getY();
+                xs = xe = e.X;
+                ys = ye = e.Y;
+              
             }
         }
 
-        public void mouseReleased(MouseEvent e)
+
+        private void Form1_MouseReleased(object sender, MouseEventArgs e)
         {
             int z, w;
 
-            e.consume();
+            //e.consume();
             if (action)
             {
-                xe = e.getX();
-                ye = e.getY();
+                xe = e.X;
+                ye = e.Y;
                 if (xs > xe)
                 {
                     z = xs;
@@ -328,10 +328,11 @@ namespace FractalAssignment
                 yzoom = (yende - ystart) / (double)y1;
                 mandelbrot();
                 rectangle = false;
-                repaint();
+                Invalidate();
             }
         }
-
+        
+        /*
         public void mouseEntered(MouseEvent e)
         {
         }
@@ -340,32 +341,39 @@ namespace FractalAssignment
         {
         }
 
+         
         public void mouseClicked(MouseEvent e)
-        {
-        }
-
-        public void mouseDragged(MouseEvent e)
-        {
-            e.consume();
-            if (action)
-            {
-                xe = e.getX();
-                ye = e.getY();
-                rectangle = true;
-                repaint();
-            }
-        }
-
-        public void mouseMoved(MouseEvent e)
         {
         }
         */
 
+        private void Form1_MouseMove(object sender, MouseEventArgs e)
+        {
+           
+            //e.consume();
+            if (action)
+            {              
+                xe = e.X;
+                ye = e.Y;
+                rectangle = true;
+                Invalidate();
+            }
+
+        }
+
+        /*
+        public void mouseMoved(MouseEvent e)
+        {
+        }*/
+        
+
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
+            
             //put the bitmap on the window
             Graphics windowG = e.Graphics;
             windowG.DrawImageUnscaled(picture, 0, 0);
+            paint(g1);   
         }
 
         private void Form1_Load(object sender, EventArgs e)
