@@ -149,25 +149,24 @@ namespace FractalAssignment
         private static double xstart, ystart, xende, yende, xzoom, yzoom;
         private static bool action, rectangle, finished;
         private static float xy;
-        private Image picture;
+        private Bitmap picture;
         private Graphics g1;
         private Cursor c1, c2;
-        //private HSB HSBcol = new HSB();
+        private HSBColor HSBcol = new HSBColor();
 
         public void init() // all instances will be prepared
         {
-            //HSBcol = new HSB();
-            //setSize(640, 480);
+            HSBcol = new HSBColor();
+            x1 = 640;
+            y1 = 480;
             finished = false;
             //addMouseListener(this);
             //addMouseMotionListener(this);
-            //c1 = new Cursor(Cursor.WAIT_CURSOR);
-            //c2 = new Cursor(Cursor.CROSSHAIR_CURSOR);
-            //x1 = getSize().width;
-            //y1 = getSize().height;
+            c1 = Cursors.WaitCursor;
+            c2 = Cursors.Cross;
             xy = (float)x1 / (float)y1;
-            //picture = createImage(x1, y1);
-            //g1 = picture.getGraphics();
+            picture = new Bitmap(x1, y1);
+            g1 = Graphics.FromImage(picture);
             finished = true;
         }
 
@@ -206,8 +205,9 @@ namespace FractalAssignment
 
         public void update(Graphics g)
         {
-            /*g.drawImage(picture, 0, 0, this);
-            if (rectangle)
+
+            g.DrawImage(picture, 0, 0);
+            /*if (rectangle)
             {
                 g.setColor(Color.white);
                 if (xs < xe)
@@ -227,9 +227,11 @@ namespace FractalAssignment
         {
             int x, y;
             float h, b, alt = 0.0f;
+            Pen pen;
+            Color color;
 
             action = false;
-            //setCursor(c1);
+            this.Cursor = c1;
             //showStatus("Mandelbrot-Set will be produced - please wait...");
             for (x = 0; x < x1; x += 2)
                 for (y = 0; y < y1; y++)
@@ -238,26 +240,18 @@ namespace FractalAssignment
                     if (h != alt)
                     {
                         b = 1.0f - h * h; // brightnes
-                        //djm added
-                        //HSBcol.fromHSB(h,0.8f,b); //convert hsb to rgb then make a Java Color
-                        //Color col = new Color(0,HSBcol.rChan,HSBcol.gChan,HSBcol.bChan);
-                        //g1.setColor(col);
-                        //djm end
-                        //djm added to convert to RGB from HSB
-
-                        //g1.setColor(Color.getHSBColor(h, 0.8f, b));
-                        //djm test
-                        //Color col = Color.getHSBColor(h, 0.8f, b);
-                        //int red = col.getRed();
-                        //int green = col.getGreen();
-                        //int blue = col.getBlue();
-                        //djm 
+                        color = HSBColor.FromHSB(new HSBColor(h * 255, 0.8f * 255, b * 255));
+                        pen = new Pen(color);
+                        g1.DrawLine(pen, x, y, x + 1, y);
                         alt = h;
                     }
-                    //g1.drawLine(x, y, x + 1, y);
+                    b = 1.0f - h * h; // brightnes
+                    color = HSBColor.FromHSB(new HSBColor(h * 255, 0.8f * 255, b * 255));
+                    pen = new Pen(color);
+                    g1.DrawLine(pen, x, y, x + 1, y);
                 }
             //showStatus("Mandelbrot-Set ready - please select zoom area with pressed mouse.");
-            //setCursor(c2);
+            this.Cursor = c2;
             action = true;
         }
 
@@ -284,6 +278,94 @@ namespace FractalAssignment
             yende = EY;
             if ((float)((xende - xstart) / (yende - ystart)) != xy)
                 xstart = xende - (yende - ystart) * (double)xy;
+        }
+
+        /*
+        public void mousePressed(MouseEvent e)
+        {
+            e.consume();
+            if (action)
+            {
+                xs = e.getX();
+                ys = e.getY();
+            }
+        }
+
+        public void mouseReleased(MouseEvent e)
+        {
+            int z, w;
+
+            e.consume();
+            if (action)
+            {
+                xe = e.getX();
+                ye = e.getY();
+                if (xs > xe)
+                {
+                    z = xs;
+                    xs = xe;
+                    xe = z;
+                }
+                if (ys > ye)
+                {
+                    z = ys;
+                    ys = ye;
+                    ye = z;
+                }
+                w = (xe - xs);
+                z = (ye - ys);
+                if ((w < 2) && (z < 2)) initvalues();
+                else
+                {
+                    if (((float)w > (float)z * xy)) ye = (int)((float)ys + (float)w / xy);
+                    else xe = (int)((float)xs + (float)z * xy);
+                    xende = xstart + xzoom * (double)xe;
+                    yende = ystart + yzoom * (double)ye;
+                    xstart += xzoom * (double)xs;
+                    ystart += yzoom * (double)ys;
+                }
+                xzoom = (xende - xstart) / (double)x1;
+                yzoom = (yende - ystart) / (double)y1;
+                mandelbrot();
+                rectangle = false;
+                repaint();
+            }
+        }
+
+        public void mouseEntered(MouseEvent e)
+        {
+        }
+
+        public void mouseExited(MouseEvent e)
+        {
+        }
+
+        public void mouseClicked(MouseEvent e)
+        {
+        }
+
+        public void mouseDragged(MouseEvent e)
+        {
+            e.consume();
+            if (action)
+            {
+                xe = e.getX();
+                ye = e.getY();
+                rectangle = true;
+                repaint();
+            }
+        }
+
+        public void mouseMoved(MouseEvent e)
+        {
+        }
+        */
+
+        private void Form1_Paint(object sender, PaintEventArgs e)
+        {
+            //put the bitmap on the window
+            Graphics windowG = e.Graphics;
+            windowG.DrawImageUnscaled(picture, 0, 0);
         }
 
         private void Form1_Load(object sender, EventArgs e)
