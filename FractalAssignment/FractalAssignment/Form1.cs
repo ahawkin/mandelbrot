@@ -146,7 +146,7 @@ namespace FractalAssignment
         private const double EY = 1.125;  // end value imaginary
         private static int x1, y1, xs, ys, xe, ye;
         private static double xstart, ystart, xende, yende, xzoom, yzoom;
-        private static bool action, rectangle, finished;
+        private static bool action, rectangle, finished, isDown;
         private static float xy;
         private Bitmap picture;
         private Graphics g1;
@@ -187,6 +187,7 @@ namespace FractalAssignment
         {
             action = false;
             rectangle = false;
+            isDown = false;
             initvalues();
             xzoom = (xende - xstart) / (double)x1;
             yzoom = (yende - ystart) / (double)y1;
@@ -204,18 +205,19 @@ namespace FractalAssignment
 
         public void update(Graphics g)
         {
+            Pen pen = new Pen(Color.White, 1);
             g.DrawImage(picture, 0, 0);
             if (rectangle)
             {
                 if (xs < xe)
                 {
-                    if (ys < ye) g.DrawRectangle(Pens.White,xs, ys, (xe - xs), (ye - ys));
-                    else g.DrawRectangle(Pens.White, xs, ye, (xe - xs), (ys - ye));
+                    if (ys < ye) g.DrawRectangle(pen, xs, ys, (xe - xs), (ye - ys));
+                    else g.DrawRectangle(pen, xs, ye, (xe - xs), (ys - ye));
                 }
                 else
                 {
-                    if (ys < ye) g.DrawRectangle(Pens.White, xe, ys, (xs - xe), (ye - ys));
-                    else g.DrawRectangle(Pens.White, xe, ye, (xs - xe), (ys - ye));
+                    if (ys < ye) g.DrawRectangle(pen, xe, ys, (xs - xe), (ye - ys));
+                    else g.DrawRectangle(pen, xe, ye, (xs - xe), (ys - ye));
                 }
             }
         }
@@ -280,13 +282,12 @@ namespace FractalAssignment
         
         public void Form1_MouseDown(object sender, MouseEventArgs e)
         {
-            
             //e.consume();
             if (action)
             {
-                xs = xe = e.X;
-                ys = ye = e.Y;
-              
+                xs = e.X;
+                ys = e.Y;
+                isDown = true;
             }
         }
 
@@ -327,45 +328,27 @@ namespace FractalAssignment
                 xzoom = (xende - xstart) / (double)x1;
                 yzoom = (yende - ystart) / (double)y1;
                 mandelbrot();
+                isDown = false;
                 rectangle = false;
                 Invalidate();
             }
         }
-        
-        /*
-        public void mouseEntered(MouseEvent e)
-        {
-        }
-
-        public void mouseExited(MouseEvent e)
-        {
-        }
-
-         
-        public void mouseClicked(MouseEvent e)
-        {
-        }
-        */
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
-           
+
             //e.consume();
-            if (action)
-            {              
+            if (action && isDown)
+            {
                 xe = e.X;
                 ye = e.Y;
-                rectangle = true;
+                rectangle = true;                
                 Invalidate();
             }
 
-        }
+            
 
-        /*
-        public void mouseMoved(MouseEvent e)
-        {
-        }*/
-        
+        }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
@@ -373,14 +356,15 @@ namespace FractalAssignment
             //put the bitmap on the window
             Graphics windowG = e.Graphics;
             windowG.DrawImageUnscaled(picture, 0, 0);
-            paint(g1);   
+            if (rectangle)
+            {
+                paint(g1);
+            }           
         }
 
         private void Form1_Load(object sender, EventArgs e)
         {
             start();
-            // Event handler called when form loads up
-            this.Text = "Hello";
         }
 
     }
