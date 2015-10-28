@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Text;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,9 +15,20 @@ namespace FractalAssignment
     {
         public Form1()
         {
-            InitializeComponent();
+            InitializeComponent();          
             init();
         }
+
+        #region Custom Panel
+        //Custom Panel to prevent background flickering
+        public class PanelDoubleBuffered : System.Windows.Forms.Panel
+        {
+            public PanelDoubleBuffered()
+            {
+                this.DoubleBuffered = true;
+            }
+        }
+        #endregion
 
         #region HSB
         public struct HSBColor
@@ -152,10 +164,12 @@ namespace FractalAssignment
         private Graphics g1;
         private Cursor c1, c2;
         private HSBColor HSBcol = new HSBColor();
+        private Rectangle rect;
 
         public void init() // all instances will be prepared
         {
             HSBcol = new HSBColor();
+            panel1.BackColor = Color.FromArgb(75, Color.Black);
             x1 = 640;
             y1 = 480;
             finished = false;
@@ -166,7 +180,7 @@ namespace FractalAssignment
             xy = (float)x1 / (float)y1;
             picture = new Bitmap(x1, y1);
             g1 = Graphics.FromImage(picture);
-            finished = true;
+            finished = true;       
         }
 
         public void destroy() // delete all instances 
@@ -186,8 +200,8 @@ namespace FractalAssignment
         public void start()
         {
             action = false;
-            rectangle = false;
             isDown = false;
+            rectangle = false;
             initvalues();
             xzoom = (xende - xstart) / (double)x1;
             yzoom = (yende - ystart) / (double)y1;
@@ -198,26 +212,19 @@ namespace FractalAssignment
         {
         }
 
-        public void paint(Graphics g)
+        public void createRect()
         {
-            update(g);
-        }
-
-        public void update(Graphics g)
-        {
-            Pen pen = new Pen(Color.White, 1);
-            g.DrawImage(picture, 0, 0);
             if (rectangle)
-            {
+            {               
                 if (xs < xe)
                 {
-                    if (ys < ye) g.DrawRectangle(pen, xs, ys, (xe - xs), (ye - ys));
-                    else g.DrawRectangle(pen, xs, ye, (xe - xs), (ys - ye));
+                    if (ys < ye) rect = new Rectangle(xs, ys, (xe - xs), (ye - ys));
+                    else rect = new Rectangle(xs, ye, (xe - xs), (ys - ye));
                 }
                 else
                 {
-                    if (ys < ye) g.DrawRectangle(pen, xe, ys, (xs - xe), (ye - ys));
-                    else g.DrawRectangle(pen, xe, ye, (xs - xe), (ys - ye));
+                    if (ys < ye) rect = new Rectangle(xe, ys, (xs - xe), (ye - ys));
+                    else rect = new Rectangle(xe, ye, (xs - xe), (ys - ye));
                 }
             }
         }
@@ -231,7 +238,8 @@ namespace FractalAssignment
 
             action = false;
             this.Cursor = c1;
-            //showStatus("Mandelbrot-Set will be produced - please wait...");
+            messageBox.Text = "Mandelbrot-Set will be produced - Please wait...";
+            messageBox.Refresh();
             for (x = 0; x < x1; x += 2)
                 for (y = 0; y < y1; y++)
                 {
@@ -249,7 +257,8 @@ namespace FractalAssignment
                     pen = new Pen(color);
                     g1.DrawLine(pen, x, y, x + 1, y);
                 }
-            //showStatus("Mandelbrot-Set ready - please select zoom area with pressed mouse.");
+            messageBox.Text = "Mandelbrot-Set ready - Please select zoom area";
+            messageBox.Refresh();
             this.Cursor = c2;
             action = true;
         }
@@ -336,18 +345,15 @@ namespace FractalAssignment
 
         private void Form1_MouseMove(object sender, MouseEventArgs e)
         {
-
             //e.consume();
             if (action && isDown)
-            {
+            {            
                 xe = e.X;
                 ye = e.Y;
-                rectangle = true;                
-                Invalidate();
-            }
-
-            
-
+                rectangle = true;
+                createRect();            
+                Invalidate();       
+            }          
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
@@ -356,10 +362,15 @@ namespace FractalAssignment
             //put the bitmap on the window
             Graphics windowG = e.Graphics;
             windowG.DrawImageUnscaled(picture, 0, 0);
+          
+            //Draw rectangle
             if (rectangle)
             {
-                paint(g1);
-            }           
+                using (Pen pen = new Pen(Color.White, 1))
+                {
+                    e.Graphics.DrawRectangle(pen, rect);
+                }   
+            }
         }
 
         private void Form1_Load(object sender, EventArgs e)
