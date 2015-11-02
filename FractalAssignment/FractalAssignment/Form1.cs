@@ -3,11 +3,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Drawing.Imaging;
 using System.Drawing.Text;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Xml.Serialization;
 
 namespace FractalAssignment
 {
@@ -151,6 +154,9 @@ namespace FractalAssignment
         }
         #endregion
 
+        //New 
+        State mandelState = new State();
+
         private const int MAX = 256;      // max iterations
         private const double SX = -2.025; // start value real
         private const double SY = -1.125; // start value imaginary
@@ -158,7 +164,7 @@ namespace FractalAssignment
         private const double EY = 1.125;  // end value imaginary
         private static int x1, y1, xs, ys, xe, ye;
         private static double xstart, ystart, xende, yende, xzoom, yzoom;
-        private static bool action, rectangle, finished, isDown;
+        private static bool action, rectangle, finished, isDown, saveButton;
         private static float xy;
         private Bitmap picture;
         private Graphics g1;
@@ -168,8 +174,10 @@ namespace FractalAssignment
 
         public void init() // all instances will be prepared
         {
+            Text = "MandelBrot";
             HSBcol = new HSBColor();
             panel1.BackColor = Color.FromArgb(75, Color.Black);
+            panel2.BackColor = Color.FromArgb(75, Color.Black);
             x1 = 640;
             y1 = 480;
             finished = false;
@@ -201,10 +209,26 @@ namespace FractalAssignment
         {
             action = false;
             isDown = false;
+            saveButton = false;
             rectangle = false;
             initvalues();
-            xzoom = (xende - xstart) / (double)x1;
-            yzoom = (yende - ystart) / (double)y1;
+            if (File.Exists("state.xml"))
+            {
+                Loadconfig();
+                xzoom = mandelState._xzoom;
+                yzoom = mandelState._yzoom;
+                xstart = mandelState._xstart;
+                ystart = mandelState._ystart;
+                xende = mandelState._xende;
+                yende = mandelState._yende;
+                stateMessage.Text = "State Loaded";
+                stateMessage.Refresh();
+            }
+            else
+            {
+                xzoom = (xende - xstart) / (double)x1;
+                yzoom = (yende - ystart) / (double)y1;
+            }
             mandelbrot();
         }
 
@@ -288,7 +312,33 @@ namespace FractalAssignment
                 xstart = xende - (yende - ystart) * (double)xy;
         }
 
-        
+        private void Loadconfig()
+        {
+            XmlSerializer ser = new XmlSerializer(typeof(State));
+            using (FileStream fs = File.OpenRead("state.xml"))
+            {
+                mandelState = (State)ser.Deserialize(fs);
+            }
+        }
+
+        private void Saveimage()
+        {
+            if (saveButton)
+            {
+                panel1.Hide();
+                panel2.Hide();
+                FormBorderStyle = FormBorderStyle.None;
+                DrawToBitmap(picture, new Rectangle(0, 0, x1, y1));
+                picture.Save("img.png");
+                saveButton = false;
+                panel1.Show();
+                panel2.Show();
+                FormBorderStyle = FormBorderStyle.FixedSingle;
+                stateMessage.Text = "Image Saved";
+                stateMessage.Refresh();
+            }
+        }
+
         public void Form1_MouseDown(object sender, MouseEventArgs e)
         {
             //e.consume();
@@ -297,9 +347,10 @@ namespace FractalAssignment
                 xs = e.X;
                 ys = e.Y;
                 isDown = true;
+                stateMessage.Text = " ";
+                stateMessage.Refresh();
             }
         }
-
 
         private void Form1_MouseReleased(object sender, MouseEventArgs e)
         {
@@ -354,6 +405,71 @@ namespace FractalAssignment
                 createRect();            
                 Invalidate();       
             }          
+        }
+
+        private void loadState_Click(object sender, EventArgs e)
+        {
+            if (File.Exists("state.xml"))
+            {
+                Loadconfig();
+                xzoom = mandelState._xzoom;
+                yzoom = mandelState._yzoom;
+                xstart = mandelState._xstart;
+                ystart = mandelState._ystart;
+                xende = mandelState._xende;
+                yende = mandelState._yende;
+                stateMessage.Text = "State Loaded";
+                stateMessage.Refresh();
+                mandelbrot();
+                Invalidate();
+            }
+            else
+            {
+                stateMessage.Text = "No state to load";
+                stateMessage.Refresh();
+            }
+        }
+
+        private void saveState_Click(object sender, EventArgs e)
+        {
+
+            using (StreamWriter sw = new StreamWriter("state.xml"))
+            {
+                stateMessage.Text = "State Saved";
+                stateMessage.Refresh();
+                mandelState._xzoom = xzoom;
+                mandelState._yzoom = yzoom;
+                mandelState._xstart = xstart;
+                mandelState._ystart = ystart;
+                mandelState._xende = xende;
+                mandelState._yende = yende;
+                XmlSerializer ser = new XmlSerializer(typeof (State));
+                ser.Serialize(sw, mandelState);
+            }
+        }
+
+        private void deleteState_Click(object sender, EventArgs e)
+        {
+            if (File.Exists("state.xml"))
+            {
+                File.Delete("State.xml");
+                stateMessage.Text = "State Deleted";
+                stateMessage.Refresh();
+            }
+            else
+            {
+                stateMessage.Text = "No state to delete";
+                stateMessage.Refresh();
+            }
+        }
+
+        private void saveImage_Click(object sender, EventArgs e)
+        {
+            saveButton = true;
+            if (saveButton)
+            {
+                Saveimage();
+            }
         }
 
         private void Form1_Paint(object sender, PaintEventArgs e)
