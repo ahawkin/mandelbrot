@@ -1,14 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Drawing;
 using System.Drawing.Imaging;
-using System.Drawing.Text;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Threading;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 
@@ -148,13 +142,12 @@ namespace FractalAssignment
                         (int)Math.Round(Math.Min(Math.Max(r, 0), 255)),
                         (int)Math.Round(Math.Min(Math.Max(g, 0), 255)),
                         (int)Math.Round(Math.Min(Math.Max(b, 0), 255))
-                        );
+                    );
             }
 
         }
         #endregion
 
-        //New 
         State mandelState = new State();
 
         private const int MAX = 256;      // max iterations
@@ -163,8 +156,8 @@ namespace FractalAssignment
         private const double EX = 0.6;    // end value real
         private const double EY = 1.125;  // end value imaginary
         private static int x1, y1, xs, ys, xe, ye;
-        private static double xstart, ystart, xende, yende, xzoom, yzoom;
-        private static bool action, rectangle, finished, isDown, saveButton;
+        private static double xstart, ystart, xende, yende, xzoom, yzoom, cycleValue, warpValue;
+        private static bool action, rectangle, finished, isDown, saveButton, cycle, auto, warp;
         private static float xy;
         private Bitmap picture;
         private Graphics g1;
@@ -176,8 +169,7 @@ namespace FractalAssignment
         {
             Text = "MandelBrot";
             HSBcol = new HSBColor();
-            panel1.BackColor = Color.FromArgb(75, Color.Black);
-            panel2.BackColor = Color.FromArgb(75, Color.Black);
+            panel2.BackColor = Color.FromArgb(95, Color.Black);
             x1 = 640;
             y1 = 480;
             finished = false;
@@ -211,6 +203,9 @@ namespace FractalAssignment
             isDown = false;
             saveButton = false;
             rectangle = false;
+            cycle = false;
+            auto = false;
+            warp = false;
             initvalues();
             if (File.Exists("state.xml"))
             {
@@ -226,10 +221,64 @@ namespace FractalAssignment
             }
             else
             {
+                stateMessage.Text = "You have 0 saved states";
+                stateMessage.Refresh();
                 xzoom = (xende - xstart) / (double)x1;
                 yzoom = (yende - ystart) / (double)y1;
             }
             mandelbrot();
+        }
+
+        private void Warp_ValueChanged(object sender, EventArgs e)
+        {
+            warp = true;
+            warpValue = 0.0f + (trackBar2.Value / 10f);
+            mandelbrot();
+            Refresh();
+        }
+
+
+        private void AutoWarp_Click(object sender, EventArgs e)
+        {
+            warp = true;
+            auto = true;
+            for (double i = 0.1; i < 1.4; i = i + 0.05)
+            {
+                warpValue = i;
+                mandelbrot();
+                Refresh();
+            }
+            warp = false;
+            auto = false;
+            mandelbrot();
+            Refresh();
+        }
+
+        private void Color_ValueChanged(object sender, EventArgs e)
+        {
+            if (!auto)
+            {
+                cycle = true;
+                cycleValue = 0.0f + (trackBar1.Value / 10f);
+                mandelbrot();
+                Refresh();
+            }
+        }
+
+        private void AutoCycle_Click(object sender, EventArgs e)
+        {
+            cycle = true;
+            auto = true;
+            for (double i = 0.1; i < 0.9; i = i + 0.05)
+            {
+                cycleValue = i;
+                mandelbrot();
+                Refresh();
+            }
+            cycle = false;
+            auto = false;
+            mandelbrot();
+            Refresh();
         }
 
         public void stop()
@@ -267,10 +316,20 @@ namespace FractalAssignment
             for (x = 0; x < x1; x += 2)
                 for (y = 0; y < y1; y++)
                 {
-                    h = pointcolour(xstart + xzoom * (double)x, ystart + yzoom * (double)y); // color value
+                    if (cycle)
+                    {
+                        h = pointcolour(xstart + xzoom*x, ystart + yzoom*y) + (float)cycleValue;
+                            
+                    }
+                    else
+                    {
+                        h = pointcolour(xstart + xzoom *x, ystart + yzoom *y); // color value
+                    }
+                    
                     if (h != alt)
                     {
-                        b = 1.0f - h * h; // brightnes
+
+                        b = 1.0f - h * h; // brightnes                  
                         color = HSBColor.FromHSB(new HSBColor(h * 255, 0.8f * 255, b * 255));
                         pen = new Pen(color);
                         g1.DrawLine(pen, x, y, x + 1, y);
@@ -289,8 +348,16 @@ namespace FractalAssignment
 
         private float pointcolour(double xwert, double ywert) // color value from 0.0 to 1.0 by iterations
         {
-            double r = 0.0, i = 0.0, m = 0.0;
-            int j = 0;
+            double r , i = 0.0, m = 0.0;
+            double j = 0;
+            if (warp)
+            {
+                r = 0.0 + warpValue;
+            }
+            else
+            {
+                r = 0.0;
+            }           
 
             while ((j < MAX) && (m < 4.0))
             {
@@ -300,6 +367,7 @@ namespace FractalAssignment
                 r = m + xwert;
             }
             return (float)j / (float)MAX;
+
         }
 
         private void initvalues() // reset start values
@@ -325,15 +393,8 @@ namespace FractalAssignment
         {
             if (saveButton)
             {
-                panel1.Hide();
-                panel2.Hide();
-                FormBorderStyle = FormBorderStyle.None;
-                DrawToBitmap(picture, new Rectangle(0, 0, x1, y1));
                 picture.Save("img.png");
                 saveButton = false;
-                panel1.Show();
-                panel2.Show();
-                FormBorderStyle = FormBorderStyle.FixedSingle;
                 stateMessage.Text = "Image Saved";
                 stateMessage.Refresh();
             }
@@ -347,8 +408,16 @@ namespace FractalAssignment
                 xs = e.X;
                 ys = e.Y;
                 isDown = true;
-                stateMessage.Text = " ";
-                stateMessage.Refresh();
+                if (File.Exists("state.xml"))
+                {
+                    stateMessage.Text = "You have 1 saved state";
+                    stateMessage.Refresh();
+                }
+                else
+                {
+                    stateMessage.Text = "You have 0 saved states";
+                    stateMessage.Refresh();
+                }         
             }
         }
 
@@ -411,6 +480,8 @@ namespace FractalAssignment
         {
             if (File.Exists("state.xml"))
             {
+                stateMessage.Text = "State Loaded               ";
+                stateMessage.Refresh();
                 Loadconfig();
                 xzoom = mandelState._xzoom;
                 yzoom = mandelState._yzoom;
@@ -418,8 +489,6 @@ namespace FractalAssignment
                 ystart = mandelState._ystart;
                 xende = mandelState._xende;
                 yende = mandelState._yende;
-                stateMessage.Text = "State Loaded";
-                stateMessage.Refresh();
                 mandelbrot();
                 Invalidate();
             }
@@ -465,10 +534,20 @@ namespace FractalAssignment
 
         private void saveImage_Click(object sender, EventArgs e)
         {
-            saveButton = true;
-            if (saveButton)
+            SaveFileDialog savefile = new SaveFileDialog();
+            // set a default file name
+            savefile.FileName = "mandelbrot.png";
+            // set filters - this can be done in properties as well
+            savefile.Filter = "PNG files (*.png)|*.png|All files (*.*)|*.*";
+
+            if (savefile.ShowDialog() == DialogResult.OK)
             {
-                Saveimage();
+                using (Stream s = File.Open(savefile.FileName, FileMode.Create))
+                {
+                    picture.Save(s, ImageFormat.Png);
+                    stateMessage.Text = "Image Saved";
+                    stateMessage.Refresh();
+                }    
             }
         }
 
