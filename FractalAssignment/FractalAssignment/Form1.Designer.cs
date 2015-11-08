@@ -31,7 +31,8 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.messageBox = new System.Windows.Forms.Label();
-            this.panel2 = new FractalAssignment.Form1.PanelDoubleBuffered();
+            this.panel2 = new FractalAssignment.PanelDoubleBuffered();
+            this.frameCount = new System.Windows.Forms.Label();
             this.stateMessage = new System.Windows.Forms.Label();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -41,17 +42,28 @@
             this.saveStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.loadStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.deleteStateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.toolStripSeparator3 = new System.Windows.Forms.ToolStripSeparator();
             this.autoCycleToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.autoWarpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.animateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.startToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.deleteFramesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
+            this.randomiseToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.resetMandelbrotToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.label1 = new System.Windows.Forms.Label();
             this.trackBar2 = new System.Windows.Forms.TrackBar();
             this.label2 = new System.Windows.Forms.Label();
-            this.autoWarpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.animateToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cycleInput = new System.Windows.Forms.Panel();
+            this.txtcyclenumber = new System.Windows.Forms.TextBox();
+            this.label3 = new System.Windows.Forms.Label();
+            this.button1 = new System.Windows.Forms.Button();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar1)).BeginInit();
             this.panel2.SuspendLayout();
             this.menuStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).BeginInit();
+            this.cycleInput.SuspendLayout();
             this.SuspendLayout();
             // 
             // trackBar1
@@ -79,12 +91,24 @@
             // panel2
             // 
             this.panel2.BackColor = System.Drawing.SystemColors.ControlDarkDark;
+            this.panel2.Controls.Add(this.frameCount);
             this.panel2.Controls.Add(this.stateMessage);
             this.panel2.Controls.Add(this.messageBox);
             this.panel2.Location = new System.Drawing.Point(-10, 451);
             this.panel2.Name = "panel2";
             this.panel2.Size = new System.Drawing.Size(642, 20);
             this.panel2.TabIndex = 2;
+            // 
+            // frameCount
+            // 
+            this.frameCount.AutoSize = true;
+            this.frameCount.BackColor = System.Drawing.Color.Transparent;
+            this.frameCount.ForeColor = System.Drawing.SystemColors.ControlLightLight;
+            this.frameCount.Location = new System.Drawing.Point(213, 3);
+            this.frameCount.Name = "frameCount";
+            this.frameCount.Size = new System.Drawing.Size(116, 13);
+            this.frameCount.TabIndex = 2;
+            this.frameCount.Text = "Animation Frames 0/10";
             // 
             // stateMessage
             // 
@@ -117,10 +141,13 @@
             this.saveStateToolStripMenuItem,
             this.loadStateToolStripMenuItem,
             this.deleteStateToolStripMenuItem,
-            this.toolStripSeparator1,
+            this.toolStripSeparator3,
             this.autoCycleToolStripMenuItem,
             this.autoWarpToolStripMenuItem,
-            this.animateToolStripMenuItem});
+            this.animateToolStripMenuItem,
+            this.toolStripSeparator1,
+            this.randomiseToolStripMenuItem,
+            this.resetMandelbrotToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(50, 19);
             this.fileToolStripMenuItem.Text = "&Menu";
@@ -128,7 +155,7 @@
             // toolStripSeparator
             // 
             this.toolStripSeparator.Name = "toolStripSeparator";
-            this.toolStripSeparator.Size = new System.Drawing.Size(133, 6);
+            this.toolStripSeparator.Size = new System.Drawing.Size(168, 6);
             // 
             // saveToolStripMenuItem
             // 
@@ -143,41 +170,100 @@
             // toolStripSeparator2
             // 
             this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(133, 6);
+            this.toolStripSeparator2.Size = new System.Drawing.Size(168, 6);
             // 
             // saveStateToolStripMenuItem
             // 
             this.saveStateToolStripMenuItem.ImageTransparentColor = System.Drawing.Color.White;
             this.saveStateToolStripMenuItem.Name = "saveStateToolStripMenuItem";
-            this.saveStateToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.saveStateToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.saveStateToolStripMenuItem.Text = "Save State";
             this.saveStateToolStripMenuItem.Click += new System.EventHandler(this.saveState_Click);
             // 
             // loadStateToolStripMenuItem
             // 
             this.loadStateToolStripMenuItem.Name = "loadStateToolStripMenuItem";
-            this.loadStateToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.loadStateToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.loadStateToolStripMenuItem.Text = "Load State";
             this.loadStateToolStripMenuItem.Click += new System.EventHandler(this.loadState_Click);
             // 
             // deleteStateToolStripMenuItem
             // 
             this.deleteStateToolStripMenuItem.Name = "deleteStateToolStripMenuItem";
-            this.deleteStateToolStripMenuItem.Size = new System.Drawing.Size(136, 22);
+            this.deleteStateToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.deleteStateToolStripMenuItem.Text = "Delete State";
             this.deleteStateToolStripMenuItem.Click += new System.EventHandler(this.deleteState_Click);
             // 
-            // toolStripSeparator1
+            // toolStripSeparator3
             // 
-            this.toolStripSeparator1.Name = "toolStripSeparator1";
-            this.toolStripSeparator1.Size = new System.Drawing.Size(133, 6);
+            this.toolStripSeparator3.Name = "toolStripSeparator3";
+            this.toolStripSeparator3.Size = new System.Drawing.Size(168, 6);
             // 
             // autoCycleToolStripMenuItem
             // 
             this.autoCycleToolStripMenuItem.Name = "autoCycleToolStripMenuItem";
             this.autoCycleToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
             this.autoCycleToolStripMenuItem.Text = "Auto Cycle Colour";
-            this.autoCycleToolStripMenuItem.Click += new System.EventHandler(this.AutoCycle_Click);
+            this.autoCycleToolStripMenuItem.Click += new System.EventHandler(this.CycleInput_Click);
+            // 
+            // autoWarpToolStripMenuItem
+            // 
+            this.autoWarpToolStripMenuItem.Name = "autoWarpToolStripMenuItem";
+            this.autoWarpToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.autoWarpToolStripMenuItem.Text = "Auto Warp";
+            this.autoWarpToolStripMenuItem.Click += new System.EventHandler(this.AutoWarp_Click);
+            // 
+            // animateToolStripMenuItem
+            // 
+            this.animateToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.startToolStripMenuItem,
+            this.stopToolStripMenuItem,
+            this.deleteFramesToolStripMenuItem});
+            this.animateToolStripMenuItem.Name = "animateToolStripMenuItem";
+            this.animateToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.animateToolStripMenuItem.Text = "Animation";
+            this.animateToolStripMenuItem.Click += new System.EventHandler(this.start_animate);
+            // 
+            // startToolStripMenuItem
+            // 
+            this.startToolStripMenuItem.Name = "startToolStripMenuItem";
+            this.startToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.startToolStripMenuItem.Text = "Start";
+            this.startToolStripMenuItem.Click += new System.EventHandler(this.start_animate);
+            // 
+            // stopToolStripMenuItem
+            // 
+            this.stopToolStripMenuItem.Enabled = false;
+            this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.stopToolStripMenuItem.Text = "Stop";
+            this.stopToolStripMenuItem.Click += new System.EventHandler(this.stop_animate);
+            // 
+            // deleteFramesToolStripMenuItem
+            // 
+            this.deleteFramesToolStripMenuItem.Name = "deleteFramesToolStripMenuItem";
+            this.deleteFramesToolStripMenuItem.Size = new System.Drawing.Size(148, 22);
+            this.deleteFramesToolStripMenuItem.Text = "Delete Frames";
+            this.deleteFramesToolStripMenuItem.Click += new System.EventHandler(this.delete_frames);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            this.toolStripSeparator1.Size = new System.Drawing.Size(168, 6);
+            // 
+            // randomiseToolStripMenuItem
+            // 
+            this.randomiseToolStripMenuItem.Name = "randomiseToolStripMenuItem";
+            this.randomiseToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.randomiseToolStripMenuItem.Text = "Randomise";
+            this.randomiseToolStripMenuItem.Click += new System.EventHandler(this.random_Click);
+            // 
+            // resetMandelbrotToolStripMenuItem
+            // 
+            this.resetMandelbrotToolStripMenuItem.Name = "resetMandelbrotToolStripMenuItem";
+            this.resetMandelbrotToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
+            this.resetMandelbrotToolStripMenuItem.Text = "Reset Mandelbrot";
+            this.resetMandelbrotToolStripMenuItem.Click += new System.EventHandler(this.Reset_Click);
             // 
             // label1
             // 
@@ -210,18 +296,47 @@
             this.label2.TabIndex = 7;
             this.label2.Text = "Warp:";
             // 
-            // autoWarpToolStripMenuItem
+            // cycleInput
             // 
-            this.autoWarpToolStripMenuItem.Name = "autoWarpToolStripMenuItem";
-            this.autoWarpToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.autoWarpToolStripMenuItem.Text = "Auto Warp";
-            this.autoWarpToolStripMenuItem.Click += new System.EventHandler(this.AutoWarp_Click);
+            this.cycleInput.BackColor = System.Drawing.SystemColors.MenuBar;
+            this.cycleInput.Controls.Add(this.txtcyclenumber);
+            this.cycleInput.Controls.Add(this.label3);
+            this.cycleInput.Controls.Add(this.button1);
+            this.cycleInput.Location = new System.Drawing.Point(201, 182);
+            this.cycleInput.Name = "cycleInput";
+            this.cycleInput.Size = new System.Drawing.Size(225, 123);
+            this.cycleInput.TabIndex = 8;
+            this.cycleInput.Visible = false;
             // 
-            // animateToolStripMenuItem
+            // txtcyclenumber
             // 
-            this.animateToolStripMenuItem.Name = "animateToolStripMenuItem";
-            this.animateToolStripMenuItem.Size = new System.Drawing.Size(171, 22);
-            this.animateToolStripMenuItem.Text = "Animate";
+            this.txtcyclenumber.Location = new System.Drawing.Point(93, 43);
+            this.txtcyclenumber.MaxLength = 2;
+            this.txtcyclenumber.Name = "txtcyclenumber";
+            this.txtcyclenumber.Size = new System.Drawing.Size(39, 20);
+            this.txtcyclenumber.TabIndex = 2;
+            this.txtcyclenumber.Text = "1";
+            // 
+            // label3
+            // 
+            this.label3.AutoSize = true;
+            this.label3.Location = new System.Drawing.Point(15, 15);
+            this.label3.Name = "label3";
+            this.label3.Size = new System.Drawing.Size(195, 13);
+            this.label3.TabIndex = 1;
+            this.label3.Text = "How many time would you like to cycle?";
+            // 
+            // button1
+            // 
+            this.button1.BackColor = System.Drawing.SystemColors.ButtonFace;
+            this.button1.FlatStyle = System.Windows.Forms.FlatStyle.Flat;
+            this.button1.Location = new System.Drawing.Point(70, 80);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(84, 32);
+            this.button1.TabIndex = 0;
+            this.button1.Text = "Cycle Colour";
+            this.button1.UseVisualStyleBackColor = false;
+            this.button1.Click += new System.EventHandler(this.AutoCycle_Click);
             // 
             // Form1
             // 
@@ -229,6 +344,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.SystemColors.MenuHighlight;
             this.ClientSize = new System.Drawing.Size(624, 471);
+            this.Controls.Add(this.cycleInput);
             this.Controls.Add(this.label2);
             this.Controls.Add(this.trackBar2);
             this.Controls.Add(this.label1);
@@ -237,6 +353,7 @@
             this.Controls.Add(this.panel2);
             this.DoubleBuffered = true;
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
             this.Name = "Form1";
             this.Text = "Form1";
             this.Load += new System.EventHandler(this.Form1_Load);
@@ -250,6 +367,8 @@
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)(this.trackBar2)).EndInit();
+            this.cycleInput.ResumeLayout(false);
+            this.cycleInput.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -275,6 +394,17 @@
         private System.Windows.Forms.ToolStripMenuItem autoCycleToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem autoWarpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem animateToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem startToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem stopToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem deleteFramesToolStripMenuItem;
+        private System.Windows.Forms.Label frameCount;
+        private System.Windows.Forms.ToolStripMenuItem randomiseToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator3;
+        private System.Windows.Forms.ToolStripMenuItem resetMandelbrotToolStripMenuItem;
+        private System.Windows.Forms.Panel cycleInput;
+        private System.Windows.Forms.Button button1;
+        private System.Windows.Forms.TextBox txtcyclenumber;
+        private System.Windows.Forms.Label label3;
     }
 }
 

@@ -2,7 +2,9 @@
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.IO;
+using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Xml.Serialization;
 
@@ -15,17 +17,6 @@ namespace FractalAssignment
             InitializeComponent();          
             init();
         }
-
-        #region Custom Panel
-        //Custom Panel to prevent background flickering
-        public class PanelDoubleBuffered : System.Windows.Forms.Panel
-        {
-            public PanelDoubleBuffered()
-            {
-                this.DoubleBuffered = true;
-            }
-        }
-        #endregion
 
         #region HSB
         public struct HSBColor
@@ -155,15 +146,16 @@ namespace FractalAssignment
         private const double SY = -1.125; // start value imaginary
         private const double EX = 0.6;    // end value real
         private const double EY = 1.125;  // end value imaginary
-        private static int x1, y1, xs, ys, xe, ye;
+        private static int x1, y1, xs, ys, xe, ye, framenumber;
         private static double xstart, ystart, xende, yende, xzoom, yzoom, cycleValue, warpValue;
-        private static bool action, rectangle, finished, isDown, saveButton, cycle, auto, warp;
+        private static bool action, rectangle, finished, isDown, cycle, auto, warp, animate;
         private static float xy;
-        private Bitmap picture;
+        private Bitmap picture, frameimage;
         private Graphics g1;
         private Cursor c1, c2;
         private HSBColor HSBcol = new HSBColor();
         private Rectangle rect;
+        private static string frametxt;
 
         public void init() // all instances will be prepared
         {
@@ -173,8 +165,6 @@ namespace FractalAssignment
             x1 = 640;
             y1 = 480;
             finished = false;
-            //addMouseListener(this);
-            //addMouseMotionListener(this);
             c1 = Cursors.WaitCursor;
             c2 = Cursors.Cross;
             xy = (float)x1 / (float)y1;
@@ -187,12 +177,11 @@ namespace FractalAssignment
         {
             if (finished)
             {
-                //removeMouseListener(this);
-                //removeMouseMotionListener(this);
                 picture = null;
                 g1 = null;
                 c1 = null;
                 c2 = null;
+                frameimage.Dispose();
                 GC.Collect(); // garbage collection
             }
         }
@@ -201,11 +190,11 @@ namespace FractalAssignment
         {
             action = false;
             isDown = false;
-            saveButton = false;
             rectangle = false;
             cycle = false;
             auto = false;
             warp = false;
+            animate = false;
             initvalues();
             if (File.Exists("state.xml"))
             {
@@ -226,13 +215,58 @@ namespace FractalAssignment
                 xzoom = (xende - xstart) / (double)x1;
                 yzoom = (yende - ystart) / (double)y1;
             }
+
+            if (!File.Exists("framecount.txt"))
+            {
+                var frametxt = File.CreateText("framecount.txt");
+                frametxt.Close();
+                File.WriteAllText("framecount.txt", "0");
+                framenumber = 1;
+            }
+            if (File.Exists("framecount.txt"))
+            {
+                string line;
+                StreamReader framestream = new StreamReader("framecount.txt");               
+                line = framestream.ReadLine();
+                frameCount.Text = "Animation Frames " + line + "/10";
+                framenumber = int.Parse(line);
+                frameCount.Refresh();
+                framestream.Close();
+                framestream.Dispose();
+            }
+
             mandelbrot();
+        }
+
+        private void Reset_Click(object sender, EventArgs e)
+        {
+            warp = true;
+            cycle = true;        
+            warpValue = 0;
+            cycleValue = 0;
+            trackBar1.Value = 0;
+            trackBar1.Refresh();
+            trackBar2.Value = 0;
+            trackBar2.Refresh();
+            mandelbrot();
+            Refresh();
+        }
+
+        private void random_Click(object sender, EventArgs e)
+        {
+            Random rand = new Random();
+            warp = true;
+            cycle = true;
+            cycleValue = rand.NextDouble();
+            warpValue = rand.NextDouble();
+            mandelbrot();
+            Refresh();
         }
 
         private void Warp_ValueChanged(object sender, EventArgs e)
         {
             warp = true;
-            warpValue = 0.0f + (trackBar2.Value / 10f);
+            warpValue = trackBar2.Value / 10f;
             mandelbrot();
             Refresh();
         }
@@ -259,22 +293,59 @@ namespace FractalAssignment
             if (!auto)
             {
                 cycle = true;
-                cycleValue = 0.0f + (trackBar1.Value / 10f);
+                cycleValue = trackBar1.Value / 10f;
                 mandelbrot();
                 Refresh();
             }
         }
 
+        private void CycleInput_Click(object sender, EventArgs e)
+        {
+            cycleInput.Visible = true;
+        }
+
         private void AutoCycle_Click(object sender, EventArgs e)
         {
-            cycle = true;
-            auto = true;
-            for (double i = 0.1; i < 0.9; i = i + 0.05)
+            int cyclenumber;
+            int i = 0;
+            double colourvalue = 0;
+            cycleInput.Visible = false;
+            Refresh();
+
+            if (string.IsNullOrWhiteSpace(txtcyclenumber.Text))
             {
-                cycleValue = i;
+                cyclenumber = 1;
+            }
+            else
+            {
+                if (!int.TryParse(txtcyclenumber.Text, out cyclenumber))
+                {
+                    cyclenumber = 1;
+                }
+            }
+
+            while (i < cyclenumber*10)
+            {
+                
+                cycle = true;
+                auto = true;
+
+                if (colourvalue > 0.8)
+                {
+                    colourvalue = 0;
+                }
+                else
+                {
+                    colourvalue = colourvalue + 0.1;
+                }
+
+                i = i + 1;
+                cycleValue = colourvalue;
+
                 mandelbrot();
                 Refresh();
             }
+
             cycle = false;
             auto = false;
             mandelbrot();
@@ -389,17 +460,6 @@ namespace FractalAssignment
             }
         }
 
-        private void Saveimage()
-        {
-            if (saveButton)
-            {
-                picture.Save("img.png");
-                saveButton = false;
-                stateMessage.Text = "Image Saved";
-                stateMessage.Refresh();
-            }
-        }
-
         public void Form1_MouseDown(object sender, MouseEventArgs e)
         {
             //e.consume();
@@ -408,6 +468,7 @@ namespace FractalAssignment
                 xs = e.X;
                 ys = e.Y;
                 isDown = true;
+
                 if (File.Exists("state.xml"))
                 {
                     stateMessage.Text = "You have 1 saved state";
@@ -460,6 +521,19 @@ namespace FractalAssignment
                 isDown = false;
                 rectangle = false;
                 Invalidate();
+                if (!animate)
+                {
+                    framenumber++;
+
+                    if (framenumber < 11)
+                    {
+                        frameCount.Text = "Animation Frames " + framenumber + "/10";
+                        frameCount.Refresh();
+                        picture.Save(framenumber + ".png");
+                        picture.Save(framenumber + ".png");
+                        File.WriteAllText("framecount.txt", framenumber.ToString());
+                    }           
+                }
             }
         }
 
@@ -551,13 +625,127 @@ namespace FractalAssignment
             }
         }
 
+        private async void start_animate(object sender, EventArgs e)
+        {
+
+            if (File.Exists("1.png"))
+            {
+                if (File.Exists("10.png"))
+                {
+                    animate = true;
+                    int imageIndex = 1;
+                    
+                    stopToolStripMenuItem.Enabled = true;
+                    saveToolStripMenuItem.Enabled = false;
+                    saveStateToolStripMenuItem.Enabled = false;
+                    loadStateToolStripMenuItem.Enabled = false;
+                    deleteStateToolStripMenuItem.Enabled = false;
+                    deleteFramesToolStripMenuItem.Enabled = false;
+                    autoCycleToolStripMenuItem.Enabled = false;
+                    autoWarpToolStripMenuItem.Enabled = false;
+                    startToolStripMenuItem.Enabled = false;
+
+                    while (animate)
+                    {
+                        frameimage = (Bitmap)Image.FromFile(imageIndex + ".png");
+                        Invalidate();
+
+                        await Task.Delay(100);
+
+                        imageIndex++;
+                        if (imageIndex > 10)
+                        {
+                            imageIndex = 1;
+                        }
+                    }
+                }
+                else
+                {
+                    stateMessage.Text = "Please record 10 zooms/frames";
+                    stateMessage.Refresh();
+                }
+
+            }
+            else
+            {
+                stateMessage.Text = "Please record 10 zooms/frames";
+                stateMessage.Refresh();
+            }
+
+        }
+
+        private void stop_animate(object sender, EventArgs e)
+        {
+            if (animate)
+            {                
+                animate = false;
+                frameimage = null;
+                mandelbrot();
+                Invalidate();
+                saveToolStripMenuItem.Enabled = true;
+                saveStateToolStripMenuItem.Enabled = true;
+                loadStateToolStripMenuItem.Enabled = true;
+                deleteStateToolStripMenuItem.Enabled = true;
+                deleteFramesToolStripMenuItem.Enabled = true;
+                autoCycleToolStripMenuItem.Enabled = true;
+                autoWarpToolStripMenuItem.Enabled = true;
+                stopToolStripMenuItem.Enabled = false;
+                startToolStripMenuItem.Enabled = true;
+            }
+            else
+            {
+                stateMessage.Text = "Animation isn't running";
+                stateMessage.Refresh();
+            }
+        }
+
+        private void delete_frames(object sender, EventArgs e)
+        {
+            if (!animate)
+            {
+                if (File.Exists("1.png"))
+                {
+                    for (int i = 0; i < 11; i++)
+                    {
+                        File.Delete(i + ".png");
+                    }
+                    stateMessage.Text = "Frames Deleted";
+                    stateMessage.Refresh();
+                    framenumber = 0;
+                    frameCount.Text = "Animation Frames 0/10";
+                    frameCount.Refresh();
+                    File.WriteAllText("framecount.txt", "0");
+                }
+                else
+                {
+                    stateMessage.Text = "No frames to delete";
+                    stateMessage.Refresh();
+                }
+            }
+            else
+            {
+                stateMessage.Text = "Please stop the animation first";
+                stateMessage.Refresh();
+            }
+        }
+
         private void Form1_Paint(object sender, PaintEventArgs e)
         {
             
             //put the bitmap on the window
             Graphics windowG = e.Graphics;
-            windowG.DrawImageUnscaled(picture, 0, 0);
-          
+
+            if (animate)
+            {
+                e.Graphics.DrawImageUnscaled(frameimage, 0, 0);
+            }
+
+            else
+            {
+                windowG.DrawImageUnscaled(picture, 0, 0);
+            }
+
+
             //Draw rectangle
             if (rectangle)
             {
