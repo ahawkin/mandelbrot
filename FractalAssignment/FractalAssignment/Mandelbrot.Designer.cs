@@ -1,6 +1,6 @@
 ﻿namespace FractalAssignment
 {
-    partial class Form1
+    partial class Mandelbrot
     {
         /// <summary>
         /// Required designer variable.
@@ -28,7 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
-            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Mandelbrot));
             this.trackBar1 = new System.Windows.Forms.TrackBar();
             this.messageBox = new System.Windows.Forms.Label();
             this.panel2 = new FractalAssignment.PanelDoubleBuffered();
