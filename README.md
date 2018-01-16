@@ -1,6 +1,6 @@
 # Mandelbrot
 
-Mandelbrot ported over from Java to C# WinForms for a second year University module. Some of the features include: Zoom, save/load state, animation and colour cycling.
+C# WinForms Mandelbrot ported over from Java for a University assignment. Some of the features include: Zoom, save/load state, animation and colour cycling.
 
 * **Module:** Software Engineering
 * **Date:** Year 2 (2014/2015)
